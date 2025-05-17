@@ -1,0 +1,9 @@
+streamlit
+streamlit-aggrid
+pandas
+numpy
+tensorflow
+scikit-learn
+fastdtw
+tqdm
+faiss-cpu
