@@ -16,8 +16,10 @@ logger = get_logger()
 
 
 def cosine_similarity_score(embedding1, embedding2):
-    """Calculate cosine similarity between two embeddings."""
-    return cosine_similarity([embedding1], [embedding2])[0][0]
+    """Calculate cosine similarity between two embeddings, scaled to [0, 1]."""
+    raw_score = cosine_similarity([embedding1], [embedding2])[0][0]
+    scaled_score = (raw_score + 1) / 2
+    return scaled_score
 
 
 def dtw_similarity_score(sequence1, sequence2):
