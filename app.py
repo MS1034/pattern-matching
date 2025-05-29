@@ -8,18 +8,17 @@ from sequence_encoder import encode_roles, generate_sequences
 from distance_engine import match_clients
 from sklearn.preprocessing import StandardScaler
 
-# Placeholder Machine Learning Model function
 
-max_seq_length = 200
+MAX_SEQ_LENGTH = 200
 
 
 def f(df, benchmark, clients_to_match):
     features, sequences, feature_cols, sequence_cols, _ = generate_sequences(
-        df, max_seq_length=max_seq_length)
+        df, max_seq_length=MAX_SEQ_LENGTH)
     model = load_model(features=features,
                        sequences=sequences,
                        model_path="model/trading_model_final.keras",
-                       max_seq_length=max_seq_length,
+                       max_seq_length=MAX_SEQ_LENGTH,
                        embedding_dim=features.shape[1]
                        )
     df = encode_roles(df)
@@ -34,7 +33,7 @@ def f(df, benchmark, clients_to_match):
         feature_cols=feature_cols,
         sequence_cols=sequence_cols,
         top_n=None,
-        max_seq_length=max_seq_length,
+        max_seq_length=MAX_SEQ_LENGTH,
         scaler=scaler,
         model=model,
     )
@@ -51,14 +50,12 @@ def main():
         ["Single Client", "Multiple Clients", "Top Matches"],
         index=0
     )
-    df = load_data("data/final_combined.parquet")
+    df = load_data("data/final_combined.parquet", symbol_join=True)
 
     if vis_type == "Single Client":
         one_one_visualize(df, f)
     elif vis_type == "Multiple Clients":
         one_n_visualization(df, f)
-    # elif vis_type == "1-ALL":
-    #     one_vs_all_visualization(df, f)
     elif vis_type == "Top Matches":
         all_all_visualization(df)
 

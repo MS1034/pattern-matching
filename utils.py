@@ -4,12 +4,19 @@ import logging
 
 
 @st.cache_data
-def load_data(PARQUET_PATH='data/new.parquet'):
+def load_data(PARQUET_PATH='data/new.parquet', symbol_join=False):
     df = pd.read_parquet(PARQUET_PATH)
+
+    if symbol_join:
+        symbol_map = pd.read_parquet('data/symbols-info.parquet')[['symbol', 'symbol_id']]
+        df = df.merge(symbol_map, on='symbol_id', how='left')
+        df.rename(columns={'symbol': 'symbol_name'}, inplace=True)
+
     cols = list(df.columns)
-    a, b = cols.index('symbol_id'), cols.index('broker_id')
+    a, b = cols.index('symbol_name'), cols.index('broker_id')
     cols[b], cols[a] = cols[a], cols[b]
     df = df[cols]
+
     return df
 
 
