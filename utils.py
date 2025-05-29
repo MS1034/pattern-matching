@@ -8,7 +8,8 @@ def load_data(PARQUET_PATH='data/new.parquet', symbol_join=False):
     df = pd.read_parquet(PARQUET_PATH)
 
     if symbol_join:
-        symbol_map = pd.read_parquet('data/symbols-info.parquet')[['symbol', 'symbol_id']]
+        symbol_map = pd.read_parquet(
+            'data/symbols-info.parquet')[['symbol', 'symbol_id']]
         df = df.merge(symbol_map, on='symbol_id', how='left')
         df.rename(columns={'symbol': 'symbol_name'}, inplace=True)
 
@@ -57,7 +58,7 @@ def get_logger():
 
 @st.cache_data
 def get_sim_data(split=False):
-    def load_csv(CSV_PATH='data/similarity_results.csv'):
+    def load_csv(CSV_PATH='data/similarity_results_1.csv'):
         df = pd.read_csv(CSV_PATH)
         return df
 
