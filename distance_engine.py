@@ -51,13 +51,17 @@ def calculate_similarity(
     cosine_sim = cosine_similarity_score(
         benchmark_embedding, candidate_embedding)
     dtw_sim = dtw_similarity_score(benchmark_sequence, candidate_sequence)
-    wasserstein_sim = wasserstein_similarity_score(
-        benchmark_sequence, candidate_sequence
-    )
+    # wasserstein_sim = wasserstein_similarity_score(
+    #     benchmark_sequence, candidate_sequence
+    # )
 
+    # weighted_score = (
+    #     weights[0] * cosine_sim + weights[1] *
+    #     dtw_sim + weights[2] * wasserstein_sim
+    # )
     weighted_score = (
-        weights[0] * cosine_sim + weights[1] *
-        dtw_sim + weights[2] * wasserstein_sim
+        0.8 * cosine_sim + 0.2 *
+        dtw_sim
     )
     max(weighted_score, 1)
     return weighted_score
