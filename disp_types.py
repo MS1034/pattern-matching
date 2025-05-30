@@ -211,93 +211,189 @@ def one_n_visualization(df, ml_func):
                 col2, comp_df, le, client_id, client_symbol, label='Compared')
 
 
+# def all_all_visualization(df: pd.DataFrame):
+#     st.title("Top Matches")
+
+#     # Input for number of top matches
+#     top_n = st.number_input(
+#         "Number of Top Matches", min_value=1, max_value=1000, value=10, step=1)
+
+#     # Ascending or Descending Sort Order
+#     sort_order = st.radio("Sort by Similarity", ["Descending", "Ascending"])
+
+#     # Sort direction flag
+#     ascending = sort_order == "Ascending"
+
+#     # Fetch and sort data
+#     display_df = get_sim_data().sort_values(
+#         by="similarity", ascending=ascending).reset_index(drop=True)[:top_n]
+
+#     # Get detailed data
+#     score = get_sim_data(split=True).sort_values(
+#         by="similarity", ascending=ascending).reset_index(drop=True)[:top_n]
+
+#     if score is not None and not score.empty:
+#         formatted_rows = []
+#         pair_labels = []
+
+#         for _, row in score.iterrows():
+#             bench_client, bench_symbol = row['benchmark'].split('_')
+#             client_id, client_symbol = row['candidate'].split('_')
+#             sim_score = row['similarity']
+
+#             # Get symbol names
+#             bench_row = df[(df['client_id'] == int(bench_client))
+#                            & (df['symbol_id'] == int(bench_symbol))]
+#             client_row = df[(df['client_id'] == int(client_id))
+#                             & (df['symbol_id'] == int(client_symbol))]
+
+#             if bench_row.empty or client_row.empty:
+#                 continue
+
+#             bench_name = bench_row['symbol_name'].iloc[0]
+#             client_name = client_row['symbol_name'].iloc[0]
+
+#             # Count trades
+#             bench_count = len(bench_row)
+#             client_count = len(client_row)
+#             bench_buys = (bench_row['role'] == 'Buy').sum()
+#             bench_sells = (bench_row['role'] == 'Sell').sum()
+
+#             client_buys = (client_row['role'] == 'Buy').sum()
+#             client_sells = (client_row['role'] == 'Sell').sum()
+
+#             percent_score = round(float(sim_score) * 100, 2)
+#             formatted_rows.append({
+#                 "Benchmark Client": bench_client,
+#                 "Benchmark Symbol": f"{bench_name} (ID:{bench_symbol})",
+#                 "Benchmark Trades": f"{bench_buys} + {bench_sells} = {bench_count}",
+#                 "Compared Client": client_id,
+#                 "Compared Symbol": f"{client_name} (ID:{client_symbol})",
+#                 "Compared Trades": f"{client_buys} + {client_sells} = {client_count}",
+#                 "Similarity Index": f"{percent_score}%",
+#                 "Difference in Trade Count": f"{abs(bench_count - client_count)}",
+#             })
+
+#             pair_labels.append(
+#                 f"{bench_client}_{bench_name}_{bench_symbol} vs {client_id}_{client_name}_{client_symbol}"
+#             )
+
+#         # Display enriched table
+#         st.subheader("Similarity Index Table")
+#         st.table(pd.DataFrame(formatted_rows))
+
+#         # Pair selection dropdown
+#         st.markdown("### Select Pair to View Trades")
+#         selected_pair_label = st.selectbox("Choose a Pair", pair_labels)
+
+#         if selected_pair_label:
+#             parts = selected_pair_label.split(" vs ")[0].split(
+#                 "_") + selected_pair_label.split(" vs ")[1].split("_")
+#             bench_client, _, bench_symbol, client_id, _, client_symbol = parts
+
+#             bench_df = df[
+#                 (df['client_id'] == int(bench_client)) &
+#                 (df['symbol_id'] == int(bench_symbol))
+#             ]
+#             comp_df = df[
+#                 (df['client_id'] == int(client_id)) &
+#                 (df['symbol_id'] == int(client_symbol))
+#             ]
+
+#             col1, col2 = st.columns(2)
+
+#             display_client_trades(
+#                 col1, bench_df, le, bench_client, bench_symbol, label='Benchmark')
+#             display_client_trades(
+#                 col2, comp_df, le, client_id, client_symbol, label='Compared')
 def all_all_visualization(df: pd.DataFrame):
     st.title("Top Matches")
 
-    # Input for number of top matches
-    top_n = st.number_input(
-        "Number of Top Matches", min_value=1, max_value=1000, value=10, step=1)
-
-    # Ascending or Descending Sort Order
+    # Inputs
+    top_n = st.number_input("Number of Top Matches",
+                            min_value=1, max_value=1000, value=10, step=1)
     sort_order = st.radio("Sort by Similarity", ["Descending", "Ascending"])
-
-    # Sort direction flag
     ascending = sort_order == "Ascending"
 
-    # Fetch and sort data
-    display_df = get_sim_data().sort_values(
-        by="similarity", ascending=ascending).reset_index(drop=True)[:top_n]
+    # Fetch once
+    sim_df = get_sim_data(split=True).sort_values(
+        by="similarity", ascending=ascending).reset_index(drop=True)
 
-    # Get detailed data
-    score = get_sim_data(split=True).sort_values(
-        by="similarity", ascending=ascending).reset_index(drop=True)[:top_n]
+    if sim_df.empty:
+        st.warning("No similarity data available.")
+        return
 
-    if score is not None and not score.empty:
-        formatted_rows = []
-        pair_labels = []
+    sim_df = sim_df[:top_n]
 
-        for _, row in score.iterrows():
-            bench_client, bench_symbol = row['benchmark'].split('_')
-            client_id, client_symbol = row['candidate'].split('_')
-            sim_score = row['similarity']
+    formatted_rows = []
+    pair_map = {}
 
-            # Get symbol names
-            bench_row = df[(df['client_id'] == int(bench_client))
-                           & (df['symbol_id'] == int(bench_symbol))]
-            client_row = df[(df['client_id'] == int(client_id))
-                            & (df['symbol_id'] == int(client_symbol))]
+    for _, row in sim_df.iterrows():
+        bench_client, bench_symbol = row['benchmark'].split('_')
+        client_id, client_symbol = row['candidate'].split('_')
+        sim_score = row['similarity']
 
-            if bench_row.empty or client_row.empty:
-                continue
+        bench_row = df[(df['client_id'] == int(bench_client)) &
+                       (df['symbol_id'] == int(bench_symbol))]
+        client_row = df[(df['client_id'] == int(client_id)) &
+                        (df['symbol_id'] == int(client_symbol))]
 
-            bench_name = bench_row['symbol_name'].iloc[0]
-            client_name = client_row['symbol_name'].iloc[0]
+        if bench_row.empty or client_row.empty:
+            continue
 
-            # Count trades
-            bench_count = len(bench_row)
-            client_count = len(client_row)
+        bench_name = bench_row['symbol_name'].iloc[0]
+        client_name = client_row['symbol_name'].iloc[0]
 
-            percent_score = round(float(sim_score) * 100, 2)
-            formatted_rows.append({
-                "Benchmark Client": bench_client,
-                "Benchmark Symbol": f"{bench_name} (ID:{bench_symbol})",
-                "Benchmark Trades": bench_count,
-                "Compared Client": client_id,
-                "Compared Symbol": f"{client_name} (ID:{client_symbol})",
-                "Compared Trades": client_count,
-                "Similarity Index": f"{percent_score}%",
-                "Difference in Trade Count": f"{abs(bench_count - client_count)}",
-            })
+        # Count trades
+        bench_count = len(bench_row)
+        client_count = len(client_row)
+        bench_buys = (bench_row['role'] == 'BUYER').sum()
+        bench_sells = (bench_row['role'] == 'SELLER').sum()
+        client_buys = (client_row['role'] == 'BUYER').sum()
+        client_sells = (client_row['role'] == 'SELLER').sum()
 
-            pair_labels.append(
-                f"{bench_client}_{bench_name}_{bench_symbol} vs {client_id}_{client_name}_{client_symbol}"
-            )
+        percent_score = round(float(sim_score) * 100, 2)
 
-        # Display enriched table
-        st.subheader("Similarity Index Table")
-        st.table(pd.DataFrame(formatted_rows))
+        formatted_rows.append({
+            "Benchmark Client": bench_client,
+            "Benchmark Symbol": f"{bench_name} (ID:{bench_symbol})",
+            "Benchmark Trades": f"{bench_buys} + {bench_sells} = {bench_count}",
+            "Compared Client": client_id,
+            "Compared Symbol": f"{client_name} (ID:{client_symbol})",
+            "Compared Trades": f"{client_buys} + {client_sells} = {client_count}",
+            "Similarity Index": f"{percent_score}%",
+            "Difference in Trade Count": f"{abs(bench_count - client_count)}",
+        })
 
-        # Pair selection dropdown
-        st.markdown("### Select Pair to View Trades")
-        selected_pair_label = st.selectbox("Choose a Pair", pair_labels)
+        label = f"{bench_client}_{bench_name}_{bench_symbol} vs {client_id}_{client_name}_{client_symbol}"
+        pair_map[label] = {
+            "bench_client": int(bench_client),
+            "bench_symbol": int(bench_symbol),
+            "client_id": int(client_id),
+            "client_symbol": int(client_symbol)
+        }
 
-        if selected_pair_label:
-            parts = selected_pair_label.split(" vs ")[0].split(
-                "_") + selected_pair_label.split(" vs ")[1].split("_")
-            bench_client, _, bench_symbol, client_id, _, client_symbol = parts
+    if not formatted_rows:
+        st.warning("No valid pairs to display.")
+        return
 
-            bench_df = df[
-                (df['client_id'] == int(bench_client)) &
-                (df['symbol_id'] == int(bench_symbol))
-            ]
-            comp_df = df[
-                (df['client_id'] == int(client_id)) &
-                (df['symbol_id'] == int(client_symbol))
-            ]
+    # Display table
+    st.subheader("Similarity Index Table")
+    st.table(pd.DataFrame(formatted_rows))
 
-            col1, col2 = st.columns(2)
+    # Select pair
+    st.markdown("### Select Pair to View Trades")
+    selected_label = st.selectbox("Choose a Pair", list(pair_map.keys()))
 
-            display_client_trades(
-                col1, bench_df, le, bench_client, bench_symbol, label='Benchmark')
-            display_client_trades(
-                col2, comp_df, le, client_id, client_symbol, label='Compared')
+    if selected_label:
+        pair = pair_map[selected_label]
+        bench_df = df[(df['client_id'] == pair['bench_client'])
+                      & (df['symbol_id'] == pair['bench_symbol'])]
+        comp_df = df[(df['client_id'] == pair['client_id']) &
+                     (df['symbol_id'] == pair['client_symbol'])]
+
+        col1, col2 = st.columns(2)
+        display_client_trades(
+            col1, bench_df, le, pair['bench_client'], pair['bench_symbol'], label='Benchmark')
+        display_client_trades(
+            col2, comp_df, le, pair['client_id'], pair['client_symbol'], label='Compared')
