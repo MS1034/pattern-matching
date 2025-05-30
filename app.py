@@ -50,7 +50,7 @@ def main():
         ["Single Client", "Multiple Clients", "Top Matches"],
         index=0
     )
-    df = load_data("data/final_combined.parquet", symbol_join=True)
+    df = load_data(symbol_join=True)
 
     if vis_type == "Single Client":
         one_one_visualize(df, f)

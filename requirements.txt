@@ -7,3 +7,4 @@ scikit-learn
 fastdtw
 tqdm
 faiss-cpu
+plotly
