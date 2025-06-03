@@ -59,7 +59,7 @@ def get_logger():
 
 @st.cache_data
 def get_sim_data(split=False):
-    def load_csv(CSV_PATH='data/similarity_results_1.csv'):
+    def load_csv(CSV_PATH='data/similarity_results_relaxed.csv'):
         df = pd.read_csv(CSV_PATH)
         return df
 
