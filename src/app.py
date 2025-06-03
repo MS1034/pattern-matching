@@ -1,18 +1,18 @@
 import streamlit as st
 from utils import load_data
-from model import load_model
-from disp_types import one_one_visualize, one_n_visualization
-from disp_types import all_all_visualization
+from ai.model import load_model
+from ui.disp_types import one_one_visualize, one_n_visualization
+from ui.disp_types import all_all_visualization
 # from disp_types import one_vs_all_visualization
-from sequence_encoder import encode_roles, generate_sequences
-from distance_engine import match_clients
+from ai.sequence_encoder import encode_roles, generate_sequences
+from ai.distance_engine import match_clients
 from sklearn.preprocessing import StandardScaler
 
 
 MAX_SEQ_LENGTH = 200
 
 
-def f(df, benchmark, clients_to_match):
+def predict_client_similarity(df, benchmark, clients_to_match):
     features, sequences, feature_cols, sequence_cols, _ = generate_sequences(
         df, max_seq_length=MAX_SEQ_LENGTH)
     model = load_model(features=features,
@@ -53,9 +53,9 @@ def main():
     df = load_data(symbol_join=True)
 
     if vis_type == "Single Client":
-        one_one_visualize(df, f)
+        one_one_visualize(df, predict_client_similarity)
     elif vis_type == "Multiple Clients":
-        one_n_visualization(df, f)
+        one_n_visualization(df, predict_client_similarity)
     elif vis_type == "Top Matches":
         all_all_visualization(df)
 

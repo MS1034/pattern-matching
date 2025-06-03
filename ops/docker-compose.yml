@@ -8,4 +8,4 @@ services:
     volumes:
       - ..:/app
     working_dir: /app
-    command: streamlit run app.py
+    command: streamlit run src/app.py

@@ -2,7 +2,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from fastdtw import fastdtw
 from scipy.stats import wasserstein_distance
 from utils import get_logger
-from sequence_encoder import pad_sequence
+from ai.sequence_encoder import pad_sequence
 from tqdm import tqdm
 import os
 import pandas as pd
