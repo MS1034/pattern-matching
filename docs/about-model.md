@@ -13,7 +13,7 @@ To solve this problem, we rewrite the problem statement itself. Instead of assum
 
 # Our Thought Process and How we Arrived at an Implementation
 
-First things first, we need to define some constraints of the problem. Considering `n` clients having at most `m` symbols, the worst case benchmark combinations will be of the complexity `O(n*m!)`. (*you're welcome to do the math!*)
+First things first, we need to define some constraints of the problem. Considering `n` clients having at most `m` symbols, the worst case benchmark combinations will be of the complexity `O(n*m!)`. (*you're welcome to do the math!*).
 
 This is the worst nightmare for us. We needed to reduce the benchmark's size on the runtime (you can use the unbounded benchmark size on the pre-compiled training results, but if the surveillance manager demands runtime evaluation, you can't possibly run the job on every possible benchmark-compare combination). RECALL that the benchmark and clients are both tuples of {ClientId, Relevant Symbols S_1, S_2,....S_m}.
 
@@ -25,7 +25,7 @@ Considering a problem of this stage, parallelization pops into our mind. Literat
 
 # Our Solution - Distance Engine
 
-Based on the above information, we devised a new approach to checking the behavior. If the trading behavior could be represented as a function of sequences, we can use some king of scoring system to see how close are two sequences. An important point to consider in these abstractions is that the data is temporal. If we are converting it into a sequence based, we need to preserve this trait. (For example, benchmark can be of 3 years and we are asked to see comparison of 3 month activity to see if it is according to the mark).
+Based on the above information, we devised a new approach to checking the behavior. If the trading behavior could be represented as a function of sequences, we can use some kind of scoring system to see how close are two sequences. An important point to consider in these abstractions is that the data is temporal. If we are converting it into a sequence based, we need to preserve this trait. (For example, benchmark can be of 3 years and we are asked to see comparison of 3 month activity to see if it is according to the mark).
 
 ## Some Insights From the Data
 
@@ -41,6 +41,8 @@ feature_cols = [
         'cum_net_vol', 'is_role_switch', 'role_encoded', 'amount'
 ]
 ```
+
+At this point, we made another critical assumption. We limited the trades to only those client-symbol pairs where the total number of trades in that symbol was >150. The rationale behind this is that due to limited number of trades, our model will be implicitly biased towards matching them in the earnest.For example, one BUY and one BUY is always a match even though there is not context.
 
 ## The Embedding Generator
 
